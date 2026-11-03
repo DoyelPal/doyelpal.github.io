@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Interactive buffer overflow and PHP2Shell memory safety lesson for cybersecurity students"><title>Buffer Overflow Attack Lab | Cybersecurity Learning Hub</title><style>
+    :root {
+      --bg: #f4efe5;
+      --surface: #fffdf8;
+      --surface-alt: #e8e0d3;
+      --text: #2d3742;
+      --muted: #687582;
+      --border: #d9d0c2;
+      --accent: #496a8a;
+      --accent-hover: #304b68;
+      --accent-soft: #e0e9f1;
+      --sidebar: #ece4d7;
+      --success: #26734d;
+      --success-soft: #e3f2e9;
+      --danger: #a43d3d;
+      --danger-soft: #f8e7e4;
+      --warning: #8b641f;
+      --warning-soft: #f7efd9;
+      --shadow: 0 12px 30px rgba(45,55,66,.08);
+    }
+    html[data-theme="dark"] {
+      --bg: #202832;
+      --surface: #293542;
+      --surface-alt: #344353;
+      --text: #f3eee5;
+      --muted: #bdc8d2;
+      --border: #465666;
+      --accent: #91b5d8;
+      --accent-hover: #b0cce5;
+      --accent-soft: #34495e;
+      --sidebar: #242f3b;
+      --success: #83d2a6;
+      --success-soft: #244638;
+      --danger: #f0a3a0;
+      --danger-soft: #4b3033;
+      --warning: #e8c77e;
+      --warning-soft: #4b412b;
+      --shadow: 0 12px 30px rgba(0,0,0,.2);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: var(--accent); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px clamp(18px, 4vw, 56px);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    .brand { color: var(--text); text-decoration: none; font-weight: 800; letter-spacing: -.02em; }
+    .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .top-actions a { text-decoration: none; font-weight: 650; }
+    .theme-btn, .secondary-btn, .primary-btn {
+      border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px;
+      background: var(--surface); color: var(--text); font-weight: 700;
+    }
+    .primary-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+    html[data-theme="dark"] .primary-btn { color: #17212b; }
+    .primary-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .secondary-btn:hover, .theme-btn:hover { border-color: var(--accent); }
+    .hero {
+      padding: clamp(38px, 7vw, 78px) 22px 48px;
+      background: linear-gradient(135deg, var(--sidebar), var(--bg));
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-inner, main, footer { width: min(1120px, calc(100% - 40px)); margin: auto; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 8px 0 12px; font-size: clamp(2.2rem, 5vw, 3.7rem); line-height: 1.08; letter-spacing: -.045em; }
+    .hero p { max-width: 760px; color: var(--muted); font-size: 1.08rem; margin: 0; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .tag { padding: 5px 11px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: .85rem; font-weight: 650; }
+    main { padding: 34px 0 70px; }
+    .layout { display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 28px; align-items: start; }
+    aside {
+      position: sticky; top: 82px; padding: 18px; border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+    }
+    aside strong { display: block; margin-bottom: 10px; }
+    aside a { display: block; padding: 7px 9px; border-radius: 8px; text-decoration: none; color: var(--muted); font-size: .92rem; }
+    aside a:hover { background: var(--accent-soft); color: var(--text); }
+    section { scroll-margin-top: 90px; margin-bottom: 30px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: clamp(20px, 3vw, 30px); box-shadow: var(--shadow); }
+    h2 { margin: 0 0 14px; font-size: 1.55rem; letter-spacing: -.025em; }
+    h3 { margin: 18px 0 8px; font-size: 1.08rem; }
+    p { margin: 8px 0 12px; }
+    .muted { color: var(--muted); }
+    .callout { margin: 16px 0; padding: 14px 16px; border-left: 4px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
+    .objectives { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px 18px; padding: 0; list-style: none; }
+    .objectives li::before { content: "✓"; color: var(--success); font-weight: 900; margin-right: 9px; }
+    .alphabet-wrap { overflow-x: auto; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-alt); }
+    .alphabet { display: grid; grid-template-columns: repeat(26,minmax(28px,1fr)); gap: 3px; min-width: 760px; }
+    .letter { text-align: center; padding: 7px 1px; border-radius: 6px; background: var(--surface); font-weight: 800; font-size: .83rem; }
+    .letter small { display: block; color: var(--muted); font-size: .62rem; font-weight: 600; }
+    .diagram-caption { margin-top: 8px; color: var(--muted); font-size: .85rem; }
+    .formula { display: inline-block; padding: 10px 14px; border-radius: 10px; background: var(--surface-alt); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 750; }
+    .two-col { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+    .mini-card { padding: 16px; background: var(--surface-alt); border-radius: 13px; border: 1px solid var(--border); }
+    .mini-card h3 { margin-top: 0; }
+    .lab-grid { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(240px,.8fr); gap: 18px; }
+    .field { display: grid; gap: 6px; margin: 12px 0; }
+    label { font-weight: 750; font-size: .92rem; }
+    input, select {
+      width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--bg); color: var(--text); padding: 11px 12px;
+    }
+    input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .range-row { display: flex; align-items: center; gap: 12px; }
+    input[type="range"] { padding: 0; accent-color: var(--accent); }
+    .shift-value { min-width: 42px; text-align: center; padding: 6px 10px; border-radius: 8px; background: var(--accent-soft); font-weight: 850; }
+    .result {
+      min-height: 76px; padding: 14px; border-radius: 12px; background: var(--surface-alt);
+      border: 1px dashed var(--border); overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .result strong { display: block; font: 700 .75rem system-ui; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; }
+    .result-text { font-size: 1.08rem; font-weight: 750; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+    .feedback { min-height: 28px; margin-top: 10px; font-weight: 700; }
+    .feedback.good { color: var(--success); }
+    .feedback.bad { color: var(--danger); }
+    .steps { counter-reset: step; display: grid; gap: 12px; }
+    .step { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
+    .step::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; font-weight: 850; }
+    .quiz-panel { overflow: hidden; }
+    .quiz-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; }
+    .quiz-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stat { background: var(--surface-alt); border: 1px solid var(--border); padding: 6px 10px; border-radius: 9px; font-size: .86rem; font-weight: 800; }
+    .progress { height: 8px; background: var(--surface-alt); border-radius: 99px; overflow: hidden; margin: 12px 0 22px; }
+    .progress-bar { height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+    .question-count { color: var(--muted); font-weight: 800; font-size: .85rem; }
+    .question { font-size: clamp(1.2rem, 2.5vw, 1.65rem); font-weight: 850; line-height: 1.3; margin: 10px 0 20px; }
+    .answers { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .answer {
+      min-height: 76px; text-align: left; padding: 15px; border: 2px solid var(--border);
+      border-radius: 13px; background: var(--surface-alt); color: var(--text); font-weight: 750;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .answer:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+    .answer .letter-badge { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 8px; background: var(--surface); font-weight: 900; }
+    .answer.correct { border-color: var(--success); background: var(--success-soft); }
+    .answer.incorrect { border-color: var(--danger); background: var(--danger-soft); }
+    .answer:disabled { cursor: default; opacity: 1; }
+    .quiz-feedback { margin-top: 16px; padding: 13px 15px; border-radius: 12px; background: var(--surface-alt); min-height: 52px; }
+    .quiz-feedback.good { background: var(--success-soft); }
+    .quiz-feedback.bad { background: var(--danger-soft); }
+    .quiz-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+    .hidden { display: none !important; }
+    .final-score { text-align: center; padding: 24px 10px; }
+    .score-number { font-size: clamp(3rem,9vw,5rem); line-height: 1; font-weight: 900; color: var(--accent); letter-spacing: -.06em; }
+    .score-ring { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; margin: 16px auto; background: conic-gradient(var(--accent) var(--score-angle), var(--surface-alt) 0); position: relative; }
+    .score-ring::before { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: var(--surface); }
+    .score-ring span { position: relative; font-size: 1.7rem; font-weight: 900; }
+    .review-list { text-align: left; margin: 20px auto; max-width: 720px; }
+    .review-item { border-top: 1px solid var(--border); padding: 12px 0; }
+    .review-item strong { display: block; }
+    footer { border-top: 1px solid var(--border); padding: 24px 0 36px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+      aside strong { width: 100%; }
+      .lab-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .two-col, .objectives, .answers { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; }
+      .top-actions a { display: none; }
+      .hero-inner, main, footer { width: min(100% - 28px, 1120px); }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  
+
+/* Buffer overflow lesson widgets, matched to Caesar subpage */
+.flex,.between{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.between{justify-content:space-between}
+.pill{display:inline-flex;padding:5px 11px;border:1px solid var(--border);border-radius:99px;background:var(--surface);color:var(--muted);font-size:.84rem;font-weight:650}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.hero .flex{margin-top:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:10px;padding:9px 14px;background:var(--surface);color:var(--text);text-decoration:none;font-weight:700;cursor:pointer}
+.btn:hover{border-color:var(--accent)}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}html[data-theme="dark"] .btn.primary{color:#17212b}
+.sectionnum{color:var(--accent);font-size:.78rem;letter-spacing:.11em;font-weight:800}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.mini,.qcard,.notice{background:var(--surface-alt);padding:15px;border:1px solid var(--border);border-radius:12px;margin:12px 0;min-width:0}.notice{border-left:4px solid var(--accent)}
+.control{width:100%;padding:12px;border-radius:9px;background:var(--bg);border:1px solid var(--border);color:var(--text);font:inherit}
+.memory{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin:15px 0}.cell{border:1px solid var(--border);background:var(--surface-alt);min-height:64px;border-radius:8px;text-align:center;padding:7px 2px;overflow:hidden}.cell.bad{background:var(--danger-soft);border-color:var(--danger)}.cell small{display:block;color:var(--muted)}.cell b{font-size:1.2rem}
+.choices{display:grid;gap:8px;margin-top:9px}.choice{text-align:left;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:11px;cursor:pointer;font:inherit}.choice:hover{border-color:var(--accent)}.choice:disabled{opacity:.75;cursor:default}.good{color:var(--success)}.badtext{color:var(--danger)}
+pre{overflow:auto;padding:16px;border-radius:10px;background:#07111d;color:#e6f3ff;white-space:pre-wrap}.scorebar{height:13px;border-radius:20px;background:var(--surface-alt);overflow:hidden}.fill{height:100%;background:var(--accent);width:0;transition:width .2s}.big-result{font-size:2.4rem;font-weight:900}
+.student-fields{display:grid;gap:9px;max-width:500px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface-alt);margin-bottom:18px}.student-fields label{font-weight:700}.student-fields .btn{justify-self:start}
+.mini p{overflow-wrap:anywhere}.hero h1{margin-bottom:14px}#topScore{font-weight:800;color:var(--accent)}
+@media(max-width:560px){.memory{grid-template-columns:repeat(4,minmax(0,1fr))}.panel{padding:18px}}
+@media print{.topbar,aside,.hero,.btn{display:none!important}.layout{display:block}main{padding:0}.panel{break-inside:avoid;box-shadow:none}html[data-theme="dark"]{--bg:#fff;--surface:#fff;--surface-alt:#fff;--text:#111;--muted:#333;--border:#aaa}}
+</style></head><body>
+<header class="topbar"><a class="brand" href="index.html">Cybersecurity Learning Hub</a><div class="top-actions"><a href="index.html">← Learning Hub</a><span id="topScore">0 / 100 XP</span><button class="theme-btn" id="themeToggle" type="button" aria-label="Toggle dark mode">☾ / ☀ Theme</button></div></header>
+<div class="hero"><div class="hero-inner"><div class="eyebrow">Cybersecurity AAS · Interactive attack lab</div><h1>💥 Buffer Overflow: Break the Boundary</h1><p>Become an attacker, debugger, and defender. Overflow a simulated memory buffer, investigate a corrupted variable, choose safe code, and connect what you learn to the real PHP2Shell memory-safety case.</p><div class="hero-pills"><span class="pill">Beginner-friendly</span><span class="pill">75–90 minutes</span><span class="pill">Safe attack simulations</span></div><div class="flex"><a class="btn primary" href="#buffer">Start challenge →</a><a class="btn" href="#cases">Real-world attack cases</a></div></div></div>
+<main><div class="layout"><aside aria-label="Lesson navigation"><strong>On this page</strong><a href="#buffer">Overflow Lab</a><a href="#attack">Attack Mission</a><a href="#code">Fix the Code</a><a href="#php">PHP2Shell Case</a><a href="#cases">Real-world Cases</a><a href="#quiz">Boss Quiz</a><a href="#results">Mission Debrief</a></aside><div><section class="panel"><div class="between"><strong>Mission progress</strong><strong id="score">0 / 100 XP</strong></div><div aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="scorebar" id="bar" role="progressbar"><div class="fill" id="fill"></div></div><p class="muted">Earn points by solving each challenge. All activity stays in your browser.</p></section>
+<section class="panel" id="buffer"><div class="sectionnum">CHALLENGE 1 · 20 XP</div><h2>🧠 Overflow the 8-byte buffer</h2><p>A fictional C program allocates eight bytes for a name. Type ASCII characters to visualize an <em>unsafe copy</em> past its boundary. The red cells are outside the allocated buffer; nothing is written to actual memory.</p><label for="input">Test input</label><input class="control" id="input" maxlength="16" value="HELLO"/><div class="memory" id="cells"></div><p aria-live="polite" id="memFeedback"></p><div class="flex"><button class="btn" id="short">Safe: HELLO</button><button class="btn" id="long">Overflow: AAAAAAAAAAAA</button></div><div class="qcard"><strong>What does a red cell represent?</strong><div class="choices" id="q1"></div></div></section>
+<section class="panel" id="attack"><div class="sectionnum">CHALLENGE 2 · 25 XP</div><h2>🎯 Attack Mission: Change the access flag</h2><p>In this <strong>fictional memory layout</strong>, the first eight bytes store a name and the ninth byte stores a one-byte <code>is_admin</code> flag. A deliberately unsafe copy could overwrite the adjacent flag. This is a conceptual demonstration—not a reliable real-world exploit.</p><div class="grid"><div class="mini"><strong>Bytes 0–7</strong><p>Username buffer (8 bytes)</p></div><div class="mini"><strong>Byte 8</strong><p>is_admin flag (initially 0)</p></div><div class="mini"><strong>Your goal</strong><p>Predict what happens when the ninth byte is nonzero.</p></div></div><label for="payload">Choose a simulated ASCII input</label><select class="control" id="payload"><option value="ALICE">ALICE</option><option value="ABCDEFGH">ABCDEFGH</option><option value="ABCDEFGH1">ABCDEFGH1</option><option value="ABCDEFGHIJKL">ABCDEFGHIJKL</option></select><button class="btn primary" id="runAttack" style="margin-top:12px">Simulate unsafe copy</button><div aria-live="polite" class="notice" id="attackOutput">Select an input and run the simulation.</div><div class="qcard"><strong>Why is this an integrity vulnerability?</strong><div class="choices" id="q2"></div></div></section>
+<section class="panel" id="code"><div class="sectionnum">CHALLENGE 3 · 20 XP</div><h2>🛠 Find the bug and fix it</h2><p>Compare two simplified C code samples. Assume <code>input</code> is a valid null-terminated string. Which version prevents an out-of-bounds write into <code>name</code>?</p><div class="grid"><div class="mini"><strong>Code A</strong><pre>char name[8];
+strcpy(name, input);</pre><p class="muted">No destination size check.</p></div><div class="mini"><strong>Code B</strong><pre>char name[8];
+snprintf(name,
+  sizeof name,
+  "%s", input);</pre><p class="muted">Limits writes to the destination capacity (may truncate input).</p></div></div><div class="qcard"><strong>Which code is safer against buffer overflow?</strong><div class="choices" id="q3"></div></div><div class="qcard"><strong>Why can eight visible characters be too long for <code>char name[8]</code> when stored as a C string?</strong><div class="choices" id="q4"></div></div></section>
+<section class="panel" id="php"><div class="sectionnum">CHALLENGE 4 · 15 XP</div><h2>🔎 Real-world connection: PHP2Shell</h2><p>PHP2Shell is the nickname used for two critical October 2026 PHP runtime memory-safety vulnerabilities, CVE-2026-109618 and CVE-2026-109619. <strong>Neither is a textbook stack-based buffer overflow.</strong> Compare the failure mechanisms rather than treating them as the same exploit.</p><div class="grid"><div class="mini"><strong>Buffer overflow</strong><p>Writes beyond the bounds of an allocated buffer, potentially corrupting adjacent memory.</p></div><div class="mini"><strong>PHP2Shell memory bugs</strong><p>Problems involving invalid memory state, including uninitialized-memory and use-after-free behavior.</p></div></div><div class="notice"><strong>Fictional SOC alert:</strong><pre>14:01 POST /form.php size=900000
+14:02 PHP worker memory error
+14:03 PHP worker crashed
+14:04 Unexpected shell child process</pre><p>A large request or crash alone does not prove exploitation. An unexpected shell process warrants urgent investigation, but does not identify a specific CVE by itself.</p></div><div class="qcard"><strong>Which conclusion is supported?</strong><div class="choices" id="q5"></div></div></section>
+<section class="panel" id="cases"><div class="sectionnum">REAL-WORLD ATTACK CASE FILES</div><h2>🌍 Three major buffer overflow attacks</h2><p>These historical incidents show how memory-corruption vulnerabilities affected internet infrastructure. Read the short summaries, then open the original technical references for deeper research.</p><div class="grid"><article class="mini"><span class="pill">2001 · Web servers</span><h3>Code Red worm</h3><p><strong>Target:</strong> Microsoft IIS Indexing Service. A buffer overflow in the IDQ/IDA extension enabled remote code execution and rapid worm propagation across vulnerable web servers.</p><p><strong>Impact:</strong> Large-scale internet disruption and website defacement.</p><p><a href="https://nvd.nist.gov/vuln/detail/CVE-2001-0500" rel="noopener noreferrer" target="_blank">NIST NVD: CVE-2001-0500 ↗</a></p></article><article class="mini"><span class="pill">2003 · Database servers</span><h3>SQL Slammer worm</h3><p><strong>Target:</strong> Microsoft SQL Server 2000 Resolution Service. A stack-based buffer overflow reachable over UDP 1434 allowed a small worm to spread extremely quickly.</p><p><strong>Impact:</strong> Network congestion and service interruptions worldwide.</p><p><a href="https://nvd.nist.gov/vuln/detail/CVE-2002-0649" rel="noopener noreferrer" target="_blank">NIST NVD: CVE-2002-0649 ↗</a></p></article><article class="mini"><span class="pill">2017 · Windows networks</span><h3>EternalBlue / WannaCry</h3><p><strong>Target:</strong> Windows SMBv1. A remotely exploitable memory-corruption flaw in SMB handling was used by the WannaCry ransomware worm to spread between vulnerable systems.</p><p><strong>Impact:</strong> Disruption to healthcare, business, and public services.</p><p><a href="https://nvd.nist.gov/vuln/detail/CVE-2017-0144" rel="noopener noreferrer" target="_blank">NIST NVD: CVE-2017-0144 ↗</a></p></article></div><div class="notice"><strong>Case-file challenge:</strong> For each incident, identify (1) the vulnerable service, (2) the memory-safety issue, (3) how the attack spread, and (4) one defense that could reduce its impact. Compare these historical overflow cases with the separate PHP2Shell memory-safety case.</div></section>
+<section class="panel" id="quiz"><div class="sectionnum">FINAL BOSS QUIZ · 20 XP</div><h2>🏆 Memory Safety Showdown</h2><p>Four questions worth 5 XP each. Answer correctly to earn your points.</p><div id="boss"></div></section>
+<section class="panel" id="results"><div class="sectionnum">MISSION DEBRIEF</div><h2>🎓 Your results</h2><div class="student-fields"><label for="studentName">Student name</label><input autocomplete="name" class="control" id="studentName" maxlength="100" placeholder="Enter your full name" type="text"/><label for="completedAt">Date and time of submission</label><input class="control" id="completedAt" type="datetime-local"/><button class="btn" id="stampNow" type="button">Use current date &amp; time</button><p class="muted">The timestamp uses your device’s local time. Verify it before printing or saving your results.</p></div><div class="big-result" id="bigScore">0 / 100 XP</div><p id="rank">Start the challenges to earn your rank.</p><div class="flex"><button class="btn primary" id="print">Print / Save results as PDF</button><button class="btn" id="reset">Restart lab</button></div><div class="notice"><strong>Exit ticket:</strong> In two sentences, explain how a buffer overflow corrupts memory, and why PHP2Shell is related to memory safety but is not itself a classic buffer overflow.</div></section></div></div></main>
+<footer><div><strong>Cybersecurity Learning Hub</strong> · Created by Dr. Doyel Pal, PhD · LaGuardia Community College, CUNY</div><div><a href="index.html">Return to Learning Hub</a> · Educational simulations · No live exploitation</div></footer><script>
+const $=id=>document.getElementById(id);let earned={};const award=(key,points)=>{if(!earned[key])earned[key]=points;update()};function update(){let s=Object.values(earned).reduce((a,b)=>a+b,0);$('score').textContent=$('topScore').textContent=$('bigScore').textContent=s+' / 100 XP';$('fill').style.width=s+'%';$('bar').setAttribute('aria-valuenow',s);$('rank').textContent=s===100?'🏅 Memory Safety Champion!':s>=75?'🛡 Security Defender':s>=45?'🔍 Vulnerability Investigator':'Keep exploring the challenges to build your skills.'}function draw(){let v=$('input').value.replace(/[^\x20-\x7E]/g,'');if(v!==$('input').value)$('input').value=v;let h='';for(let i=0;i<16;i++)h+=`<div class="cell ${i>=8&&i<v.length?'bad':''}"><small>${i}</small><b>${v[i]||'·'}</b></div>`;$('cells').innerHTML=h;$('memFeedback').textContent=v.length>8?`${v.length-8} byte(s) extend beyond the eight-byte boundary in this simulated unsafe copy.`:`${v.length} of 8 bytes used in the visualization. (A real C string also needs a null terminator.)`}$('input').addEventListener('input',draw);$('short').onclick=()=>{$('input').value='HELLO';draw()};$('long').onclick=()=>{$('input').value='AAAAAAAAAAAA';draw()};draw();
+function question(target,key,points,stem,options,correct,explain){let root=$(target),buttons=options.map((v,i)=>`<button class="choice" data-i="${i}">${v}</button>`).join('');root.innerHTML=`${stem?`<p><strong>${stem}</strong></p>`:''}<div class="choices">${buttons}</div><p class="answer" aria-live="polite"></p>`;root.querySelectorAll('button').forEach(b=>b.onclick=()=>{let i=Number(b.dataset.i),msg=root.querySelector('.answer');if(i===correct){award(key,points);msg.className='answer good';msg.textContent='✓ Correct! '+explain;root.querySelectorAll('button').forEach(x=>x.disabled=true)}else{msg.className='answer badtext';msg.textContent='Not quite—try another answer.'}})}
+question('q1','boundary',20,'',['Cells reserved for the name','Bytes beyond the allocated buffer','A firewall blocking the input'],1,'Red cells visualize an out-of-bounds write.');question('q2','integrity',10,'',['It changes data that was not intended to be modified','It encrypts the username','It automatically installs malware'],0,'Overwriting a security-sensitive flag can compromise integrity.');question('q3','safeCode',10,'',['Code A','Code B','Both are equally safe'],1,'snprintf bounds the destination write; also check truncation when relevant.');question('q4','terminator',10,'',['C strings need a trailing null byte','The compiler always doubles the text','ASCII always takes two bytes'],0,'Eight visible characters plus the null terminator require nine bytes.');question('q5','phpCase',15,'',['PHP2Shell is exactly the same as a classic stack overflow','The logs prove a particular PHP CVE was exploited','Different memory bugs can have similar symptoms; more evidence is needed'],2,'Memory corruption can have overlapping consequences without sharing the same root cause.');
+$('runAttack').onclick=()=>{let v=$('payload').value;let changed=v.length>=9&&v.charCodeAt(8)!==0;$('attackOutput').innerHTML=`<strong>Simulation result:</strong> copied ${v.length} ASCII byte(s). ${changed?'Byte 8 would overwrite <code>is_admin</code> with a nonzero value in this fictional layout.':'The ninth-byte flag is unchanged in this simplified model.'} <br><span class="muted">A real C string also copies a null terminator; real compilers and memory layouts vary.</span>`;if(changed)award('flag',15)};
+const boss=[['What is a buffer overflow?',['Data written past allocated buffer bounds','An expired password','A blocked port'],0,'It is an out-of-bounds memory access.'],['Which is a likely impact of a buffer overflow?',['Only a slower internet connection','Crash or memory corruption','Automatic safe encryption'],1,'Memory corruption can cause crashes or worse.'],['What should developers do with untrusted input?',['Copy without checking','Validate lengths and use bounded operations','Disable logging'],1,'Bounds checks and safe APIs reduce overflow risk.'],['Which statement about PHP2Shell is accurate?',['It demonstrates that all memory bugs are stack overflows','It is unrelated to software security','It involves memory-safety issues distinct from classic buffer overflow'],2,'Distinguish use-after-free and other invalid-memory bugs from buffer overflow.']];boss.forEach((q,i)=>{let d=document.createElement('div');d.className='qcard';d.id='boss'+i;$('boss').appendChild(d);question(d.id,'boss'+i,5,(i+1)+'. '+q[0],q[1],q[2],q[3])});function applyTheme(theme){document.documentElement.dataset.theme=theme;try{localStorage.setItem('cyberHubTheme',theme)}catch(e){}}
+try{applyTheme(localStorage.getItem('cyberHubTheme')||'light')}catch(e){applyTheme('light')}
+document.getElementById('themeToggle').addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+const nowLocal=()=>{const d=new Date();const pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`};$('completedAt').value=nowLocal();$('stampNow').onclick=()=>{$('completedAt').value=nowLocal()};$('print').onclick=()=>window.print();$('reset').onclick=()=>{if(confirm('Restart all challenges and clear your score?'))location.reload()};update();
+</script></body></html>
