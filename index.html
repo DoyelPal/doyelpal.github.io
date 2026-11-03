@@ -8,35 +8,43 @@
 <title>Cybersecurity Learning Hub</title>
 
 <style>
-/* ===== COLOR THEMES ===== */
+
+/* LIGHT THEME */
 :root {
-  --bg: #f4eee5;
-  --surface: #fffaf3;
-  --surface-alt: #eee2d5;
-  --text: #382d29;
-  --muted: #786a63;
-  --border: #dfd0c2;
-  --red: #a7473f;
-  --red-hover: #8f3832;
-  --red-soft: #f1ddd7;
-  --sidebar: #eee1d2;
-  --shadow: 0 12px 32px rgba(70, 43, 34, .08);
+  --bg: #f4efe5;
+  --surface: #fffdf8;
+  --surface-alt: #e8e0d3;
+  --text: #2d3742;
+  --muted: #687582;
+  --border: #d9d0c2;
+
+  /* Blue accent colors */
+  --red: #496a8a;
+  --red-hover: #304b68;
+  --red-soft: #e0e9f1;
+
+  --sidebar: #ece4d7;
+  --shadow: 0 12px 32px rgba(39, 58, 78, .09);
 }
 
+/* DARK THEME */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #262321;
-  --surface: #302d2a;
-  --surface-alt: #3c3531;
-  --text: #f3e9df;
-  --muted: #c0b1a6;
-  --border: #51453f;
-  --red: #d47b71;
-  --red-hover: #e28d82;
-  --red-soft: #49332f;
-  --sidebar: #2c2926;
-  --shadow: 0 12px 32px rgba(0, 0, 0, .2);
+  --bg: #202832;
+  --surface: #293542;
+  --surface-alt: #344353;
+  --text: #f3eee5;
+  --muted: #bdc8d2;
+  --border: #465666;
+
+  --red: #91b5d8;
+  --red-hover: #b0cce5;
+  --red-soft: #34495e;
+
+  --sidebar: #242f3b;
+  --shadow: 0 12px 32px rgba(0, 0, 0, .22);
 }
+
 
 * {
   box-sizing: border-box;
@@ -591,11 +599,11 @@ section {
   gap: 22px;
   padding: 30px;
   margin: 36px 0;
-  background: #f5eee5;
-  border: 1px solid #e3d5c9;
-  border-left: 5px solid #934b46;
-  border-radius: 14px;
-  color: #302b28;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--red);
+  color: var(--text);
+  border-radius: 16px;
 }
 
 .creator-icon {
@@ -617,11 +625,13 @@ section {
   font-weight: 700;
   letter-spacing: 1.5px;
 }
-
-.creator-content h2 {
-  margin: 0 0 10px;
-  font-size: 25px;
+.creator-section h2,
+.creator-section h3,
+.creator-section p {
+    color: var(--text);
 }
+
+
 
 .creator-role {
   margin: 0 0 8px;
@@ -817,8 +827,8 @@ a:focus-visible, button:focus-visible {
         <article class="module"><div class="module-number">01</div><div><h3>Cybersecurity Foundations</h3><p>Security principles, threats, assets, risk, and the CIA triad.</p></div></article>
         <article class="module"><div class="module-number">02</div><div><h3>Authentication & Access Control</h3><p>Passwords, multifactor authentication, permissions, and identity.</p></div></article>
         <article class="module"><div class="module-number">03</div><div><h3>Network Security</h3><p>Network protocols, traffic analysis, firewalls, and intrusion detection.</p></div></article>
-        <article class="module"><div class="module-number">04</div><div><h3>Web & Application Security</h3><p>Common web vulnerabilities, secure coding, and defensive testing.</p></div></article>
-        <article class="module"><div class="module-number">05</div><div><h3>Cryptography & Data Protection</h3><p>Encryption, hashing, digital signatures, certificates, and privacy.</p></div></article>
+        <article class="module"><div class="module-number">04</div><div><h3><a href="web-application-security.html">Web & Application Security</h3><p>Common web vulnerabilities, secure coding, and defensive testing.</p></div></article>
+        <article class="module"><div class="module-number">05</div><div><h3><a href="cryptography.html">Cryptography</a></h3><p>Encryption, hashing, digital signatures, certificates, and privacy.</p></div></article>
         <article class="module"><div class="module-number">06</div><div><h3>Threat Detection & Response</h3><p>Logs, alerts, incident response, and security monitoring basics.</p></div></article>
       </div>
     </section>
