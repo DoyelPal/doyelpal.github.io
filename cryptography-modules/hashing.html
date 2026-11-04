@@ -178,7 +178,7 @@
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
   
 
-/* Buffer overflow lesson widgets, matched to Caesar subpage */
+
 .flex,.between{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.between{justify-content:space-between}
 .pill{display:inline-flex;padding:5px 11px;border:1px solid var(--border);border-radius:99px;background:var(--surface);color:var(--muted);font-size:.84rem;font-weight:650}
 .hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.hero .flex{margin-top:20px}
@@ -202,8 +202,29 @@ pre{overflow:auto;padding:16px;border-radius:10px;background:#07111d;color:#e6f3
 .candidate-grid{display:flex;flex-wrap:wrap;gap:8px}.candidate-grid span{padding:7px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-family:ui-monospace,monospace;font-weight:700}.choice.selected-correct{background:var(--success-soft)!important;border:2px solid var(--success)!important;color:var(--text)!important}.choice.selected-wrong{background:var(--danger-soft)!important;border:2px solid var(--danger)!important}.quiz-response{padding:12px 14px;margin-top:12px;border-radius:10px;font-weight:800}.quiz-response.good{background:var(--success-soft);border:1px solid var(--success);color:var(--success)}.quiz-response.bad{background:var(--danger-soft);border:1px solid var(--danger);color:var(--danger)}#downloadPackage,#trustedPackage{font-size:.85rem;white-space:pre-wrap}
 </style></head><body>
 <header class="topbar"><a class="brand" href="../index.html">Cybersecurity Learning Hub</a><div class="top-actions"><a href="../cryptography.html">← Cryptography</a><span id="topScore">0 / 100 XP</span><button class="theme-btn" id="themeToggle" type="button">☾ / ☀ Theme</button></div></header>
-<div class="hero"><div class="hero-inner"><div class="eyebrow">Cryptography · Interactive security lab</div><h1>🔐 Hashing: The Digital Fingerprint Challenge</h1><p>Explore one-way hash functions, collision resistance, avalanche effects, password storage, rainbow tables, and real-world failures through interactive visualizations and defensive challenges.</p><div class="hero-tags"><span class="tag">Beginner-friendly</span><span class="tag">75–90 minutes</span><span class="tag">Browser-based labs</span><span class="tag">100 XP</span></div><div class="button-row"><a class="btn primary" href="#basics">Start learning →</a><a class="btn" href="#cases">Explore real-world cases</a></div></div></div>
-<main><div class="layout"><aside aria-label="Lesson navigation"><strong>On this page</strong><a href="#objectives">Learning objectives</a><a href="#basics">1 · Hashing basics</a><a href="#properties">2 · Hash properties</a><a href="#avalanche">3 · Avalanche lab</a><a href="#collision">4 · Package integrity lab</a><a href="#applications">5 · Applications</a><a href="#passwords">6 · Password defense</a><a href="#argon2id">7 · Argon2id</a><a href="#rainbow">7 · Rainbow tables</a><a href="#attacks">8 · Attack lab</a><a href="#cyberchef">CyberChef lab</a><a href="#cases">Real-world cases</a><a href="#quiz">Final boss quiz</a><a href="#results">Mission debrief</a></aside><div>
+<div class="hero">
+    <div class="hero-inner"><div class="eyebrow">Cryptography · Interactive security lab</div>
+        <h1>🔐 Hashing: The Digital Fingerprint Challenge</h1>
+        <p>Explore one-way hash functions, collision resistance, avalanche effects, password storage, rainbow tables, and real-world failures through interactive visualizations and defensive challenges.</p><div class="hero-tags"><span class="tag">Beginner-friendly</span><span class="tag">75–90 minutes</span><span class="tag">Browser-based labs</span><span class="tag">100 XP</span></div><div class="button-row"><a class="btn primary" href="#basics">Start learning →</a><a class="btn" href="#cases">Explore real-world cases</a></div></div></div>
+<main>
+    <div class="layout">
+        <aside aria-label="Lesson navigation"><strong>On this page</strong>
+            <a href="#objectives">Learning objectives</a>
+            <a href="#basics">1 · Hashing basics</a>
+            <a href="#properties">2 · Hash properties</a>
+            <a href="#avalanche">3 · Avalanche lab</a>
+            <a href="#collision">4 · Package integrity lab</a>
+            <a href="#applications">5 · Applications</a>
+            <a href="#passwords">6 · Password defense</a>
+            <a href="#argon2id">7 · Argon2id</a>
+            <a href="#rainbow">8 · Rainbow tables</a>
+            <a href="#attacks">9 · Cracking hashes</a>
+            <a href="#cyberchef">10 ·Hands-on lab</a>
+            <a href="#cases">11 · Real-world case files</a>
+            <a href="#quiz">12 · Final boss quiz</a>
+            <a href="#results">13 · Mission debrief</a>
+        </aside>
+    <div>
 <section class="panel" id="objectives"><div class="eyebrow">Your learning mission</div><h2>Learning objectives</h2><ul class="objectives"><li>Explain cryptographic hashing and fixed-length digests</li><li>Distinguish preimage, second-preimage, and collision resistance</li><li>Visualize the avalanche effect using SHA-256</li><li>Explain why collisions must exist for fixed-size hashes</li><li>Identify file integrity, signatures, and password-storage uses</li><li>Describe dictionary attacks, rainbow tables, and salting</li><li>Recognize historical weaknesses in MD5 and SHA-1</li><li>Choose appropriate modern password-hashing defenses</li></ul><div class="callout"><strong>Safety:</strong> All guessing demonstrations use fictional, local toy data. No real credentials are accessed or attacked. The SHA-256 visualizer uses your browser's Web Crypto API (on HTTPS or localhost).</div></section>
 <section class="panel"><div class="between"><strong>Mission progress</strong><strong id="score">0 / 100 XP</strong></div><div aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="scorebar" id="bar" role="progressbar"><div class="fill" id="fill"></div></div><p class="muted">Answer the knowledge checks and finish the challenges to earn up to 100 XP.</p></section>
 <section class="panel" id="basics"><div class="sectionnum">CHALLENGE 1 · 10 XP</div><h2>🧩 What is hashing?</h2><p>A <strong>cryptographic hash function</strong> transforms an input of arbitrary length into a fixed-length output called a <strong>digest</strong>. SHA-256 always produces 256 bits (64 hexadecimal characters), whether the input is one letter or an entire file.</p><div aria-label="Input message passes through SHA-256 to produce a fixed-size digest" class="hash-flow" role="img"><div class="flow-node"><strong>📄 Input</strong><p class="muted">Any length</p></div><span class="flow-arrow">→</span><div class="flow-node"><strong>⚙️ SHA-256</strong><p class="muted">Hash function</p></div><span class="flow-arrow">→</span><div class="flow-node"><strong>🔑 Digest</strong><p class="muted">256 bits</p><div class="digest">64 hex characters</div></div></div><div class="two-col"><div class="mini-card"><h3>Hashing ≠ Encryption</h3><p>Encryption uses a key to enable authorized reversal. Cryptographic hashing has no decryption key; its output is designed not to reveal the original input.</p></div><div class="mini-card"><h3>Hashing ≠ Encoding</h3><p>Encoding, such as Base64, is reversible and does not provide secrecy or cryptographic integrity.</p></div></div><div class="qcard"><strong>Knowledge check: Which statement is correct?</strong><div class="choices" id="q1"></div></div></section>
